@@ -13,10 +13,6 @@
 #include <zephyr/kernel.h>
 
 #include <zmk/behavior.h>
-#include <zmk/endpoints.h>
-#include <zmk/event_manager.h>
-#include <zmk/events/activity_state_changed.h>
-#include <zmk/events/usb_conn_state_changed.h>
 #include <zmk/rgb_underglow.h>
 
 #include <dt-bindings/zmk/rgb_dual_breath.h>
@@ -47,6 +43,9 @@ static struct behavior_rgb_dual_breath_data dual_breath_state = {
     .animation_step = 0,
 };
 
+// Store original RGB state to restore when disabled
+static bool original_rgb_on = false;
+
 
 // Breathing animation function
 static void dual_breath_effect_step(void) {
@@ -76,7 +75,7 @@ static void dual_breath_effect_step(void) {
     uint8_t final_brightness = (dual_breath_state.brightness * breath_intensity) / 255;
 
     // Apply color through ZMK's RGB underglow system
-    struct zmk_periph_led_hsb color = {
+    struct zmk_led_hsb color = {
         .h = current_hue,
         .s = dual_breath_state.saturation,
         .b = final_brightness
@@ -100,21 +99,44 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
     case RGB_DUAL_BREATH_TOG:
         dual_breath_state.enabled = !dual_breath_state.enabled;
         if (dual_breath_state.enabled) {
+            // Store current RGB state before starting effect
+            bool current_state;
+            int err = zmk_rgb_underglow_get_state(&current_state);
+            if (err == 0) {
+                original_rgb_on = current_state;
+            }
             k_timer_start(&dual_breath_timer, K_MSEC(50), K_MSEC(50));
         } else {
             k_timer_stop(&dual_breath_timer);
-            // Turn off underglow
-            zmk_rgb_underglow_off();
+            // Restore original RGB state or turn off
+            if (original_rgb_on) {
+                zmk_rgb_underglow_on();
+            } else {
+                zmk_rgb_underglow_off();
+            }
         }
         break;
     case RGB_DUAL_BREATH_ON:
+        if (!dual_breath_state.enabled) {
+            // Store current RGB state before starting effect
+            bool current_state;
+            int err = zmk_rgb_underglow_get_state(&current_state);
+            if (err == 0) {
+                original_rgb_on = current_state;
+            }
+        }
         dual_breath_state.enabled = true;
         k_timer_start(&dual_breath_timer, K_MSEC(50), K_MSEC(50));
         break;
     case RGB_DUAL_BREATH_OFF:
         dual_breath_state.enabled = false;
         k_timer_stop(&dual_breath_timer);
-        zmk_rgb_underglow_off();
+        // Restore original RGB state or turn off
+        if (original_rgb_on) {
+            zmk_rgb_underglow_on();
+        } else {
+            zmk_rgb_underglow_off();
+        }
         break;
     }
     

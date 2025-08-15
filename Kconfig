@@ -1,0 +1,37 @@
+# Copyright (c) 2024 ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+config ZMK_RGB_DUAL_BREATH
+	bool "Enable RGB dual breath behavior"
+	depends on ZMK_RGB_UNDERGLOW
+	help
+	  Enable the RGB dual breath behavior that provides a dual-color
+	  breathing animation effect for RGB underglow.
+
+if ZMK_RGB_DUAL_BREATH
+
+config ZMK_RGB_DUAL_BREATH_COLOR1_HUE
+	int "First color hue (0-359)"
+	default 120
+	range 0 359
+	help
+	  Hue value for the first color in the dual breath effect.
+	  0=Red, 60=Yellow, 120=Green, 180=Cyan, 240=Blue, 300=Magenta
+
+config ZMK_RGB_DUAL_BREATH_COLOR2_HUE
+	int "Second color hue (0-359)"
+	default 240
+	range 0 359
+	help
+	  Hue value for the second color in the dual breath effect.
+	  0=Red, 60=Yellow, 120=Green, 180=Cyan, 240=Blue, 300=Magenta
+
+config ZMK_RGB_DUAL_BREATH_SATURATION
+	int "Color saturation (0-100)"
+	default 100
+	range 0 100
+	help
+	  Saturation level for both colors in the dual breath effect.
+	  0=Grayscale, 100=Fully saturated
+
+endif # ZMK_RGB_DUAL_BREATH
