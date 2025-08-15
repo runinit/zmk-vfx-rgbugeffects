@@ -1,11 +1,66 @@
-# ZMK Module Template
+# ZMK RGB Dual Breath Module
 
-This repository contains a template for a ZMK module, as it would most frequently be used. 
+A ZMK module that provides a dual-color breathing RGB underglow effect.
+
+## Features
+
+- Custom dual-color breathing animation
+- Configurable color hues and saturation
+- Smooth transitions between colors
+- Toggle on/off functionality
+
+## Configuration
+
+Add this module to your `config/west.yml`:
+
+```yaml
+manifest:
+  remotes:
+    - name: zmkfirmware
+      url-base: https://github.com/zmkfirmware
+    - name: runinit
+      url-base: https://github.com/runinit
+  projects:
+    - name: zmk
+      remote: zmkfirmware
+      revision: main
+      import: app/west.yml
+    - name: zmk-rgb-dual-breath
+      remote: runinit
+      revision: main
+  self:
+    path: config
+```
 
 ## Usage
 
-Read through the [ZMK Module Creation](https://zmk.dev/docs/development/module-creation) page for details on how to configure this template.
+In your keymap file, add:
 
-## More Info
+```c
+#include <dt-bindings/zmk/rgb_dual_breath.h>
 
-For more info on modules, you can read through  through the [Zephyr modules page](https://docs.zephyrproject.org/3.5.0/develop/modules.html) and [ZMK's page on using modules](https://zmk.dev/docs/features/modules). [Zephyr's west manifest page](https://docs.zephyrproject.org/3.5.0/develop/west/manifest.html#west-manifests) may also be of use.
+/ {
+    rgb_dual_breath: rgb_dual_breath {
+        compatible = "zmk,behavior-rgb-dual-breath";
+        label = "RGB_DUAL_BREATH";
+        #binding-cells = <1>;
+    };
+};
+```
+
+Then use in your keymap:
+```c
+&rgb_dual_breath RGB_DUAL_BREATH_TOG
+```
+
+## Configuration Options
+
+- `CONFIG_ZMK_RGB_DUAL_BREATH_COLOR1_HUE`: First color hue (0-359, default: 120)
+- `CONFIG_ZMK_RGB_DUAL_BREATH_COLOR2_HUE`: Second color hue (0-359, default: 240) 
+- `CONFIG_ZMK_RGB_DUAL_BREATH_SATURATION`: Color saturation (0-100, default: 100)
+
+## Commands
+
+- `RGB_DUAL_BREATH_TOG`: Toggle the dual breath effect
+- `RGB_DUAL_BREATH_ON`: Enable the dual breath effect
+- `RGB_DUAL_BREATH_OFF`: Disable the dual breath effect
